@@ -4283,6 +4283,72 @@
                 guess_input.value = "";
                 quiz();
             }
+
+            // DYE MAP IN SATELLITE VIEW COLORS
+            const SAT_COLORS = {
+                "AE":"#e2cb98", "AF":"#ab9d73", "AL":"#648448", "AM":"#7c8a56", "AO":"#8d9d4d", "AT":"#4c7747",
+                "AmericanSamoa":"#3e7d3e", "Angola":"#849444", "Argentina":"#97a65d", "Australia":"#bb945c",
+                "Azerbaijan":"#7c8a56", "BA":"#68884c", "BB":"#3e7d3e", "BD":"#418041", "BE":"#69944a", "BF":"#859545",
+                "BG":"#638347", "BH":"#dec794", "BI":"#8a9a4a", "BJ":"#8c9c4c", "BN":"#29652e", "BO":"#367536", "BR":"#2f6b34",
+                "BT":"#3e7d3e", "BW":"#a09650", "BY":"#578142", "BZ":"#2d6932", "Bahamas":"#387738",
+                "BarbudaAndAntigua":"#357435", "CD":"#2d6932", "CF":"#8c9c4c", "CG":"#326e37", "CH":"#5f7f57", "CI":"#35713a",
+                "CM":"#2d6932", "CO":"#316d36", "CR":"#35713a", "CU":"#387738", "CZ":"#749f55", "Canada":"#2f513a",
+                "CapeVerde":"#9f9a5e", "Chile":"#8c875f", "China":"#929759", "Comoros":"#2a662f", "Cyprus":"#9faa66",
+                "DE":"#61904c", "DJ":"#a69c56", "DM":"#407f40", "DO":"#357435", "DZ":"#d5be83", "Denmark":"#e9f2f5",
+                "EC":"#2a662f", "EE":"#4c7843", "EG":"#d8be84", "ER":"#aba15b", "ET":"#849444", "FI":"#2c573a",
+                "FederatedStatesOfMicronesia":"#316d36", "Fiji":"#2c6831", "France":"#6d9953", "GA":"#347039", "GD":"#367536",
+                "GE":"#798753", "GH":"#8c9c4c", "GM":"#859545", "GN":"#879747", "GQ":"#316d36", "GT":"#418041", "GW":"#879747",
+                "GY":"#2f6b34", "Greece":"#909b5c", "HN":"#3e7d3e", "HR":"#618145", "HT":"#397839", "HU":"#84a050",
+                "IE":"#4a954a", "IL":"#beaf72", "IN":"#809542", "IQ":"#bfae74", "IR":"#b29c6a", "IS":"#707d65",
+                "Indonesia":"#347039", "Italy":"#77934d", "JM":"#3b7a3b", "JO":"#d0b57f", "Japan":"#367536", "KE":"#849444",
+                "KG":"#89875f", "KH":"#397839", "KP":"#578146", "KR":"#5a8a48", "KW":"#dac390", "KZ":"#a6a35c", "LA":"#357435",
+                "LB":"#7a8a50", "LC":"#387738", "LK":"#2a662f", "LR":"#35713a", "LS":"#a09650", "LT":"#497540", "LU":"#6c974d",
+                "LV":"#4c7843", "LY":"#e2cc92", "MD":"#89a555", "ME":"#6c8c50", "MG":"#367536", "MH":"#387738", "MK":"#68884c",
+                "ML":"#d5bb7b", "MM":"#407f40", "MN":"#aba760", "MR":"#d9c387", "MV":"#407f40", "MW":"#90a050", "MX":"#9a9452",
+                "MZ":"#879747", "Malaysia":"#29652e", "Malta":"#b6a86a", "Mauritius":"#29652e", "Morocco":"#bfa96d",
+                "NA":"#cfb074", "NE":"#cdb474", "NG":"#8c9c4c", "NI":"#407f40", "NP":"#3d7c3d", "NR":"#407f40",
+                "Netherlands":"#749f55", "NewZealand":"#518d4b", "Norway":"#44684c", "OM":"#d4b57d", "Oman":"#d7b880",
+                "PA":"#347039", "PE":"#2c6831", "PK":"#baaa72", "PL":"#608946", "PS":"#bdae71", "PT":"#92a058", "PW":"#387738",
+                "PY":"#6f8f45", "PapuaNewGuinea":"#2f6b34", "Philippines":"#326e37", "QA":"#ddc693", "RO":"#819d4d",
+                "RS":"#69894d", "RW":"#859545", "RussianFederation":"#416443", "SA":"#d7be85", "SD":"#c9b077", "SE":"#376241",
+                "SI":"#608044", "SK":"#6c974d", "SL":"#2d6932", "SN":"#8c9c4c", "SO":"#a99f59", "SR":"#29652e", "SS":"#859545",
+                "SV":"#3b7a3b", "SY":"#b8aa6f", "SZ":"#aca25c", "SaintNevisAndKitts":"#3e7d3e", "SaoTomeAndPrincipe":"#2d6932",
+                "Seychelles":"#2c6831", "SolomonIslands":"#2a662f", "Spain":"#a69e5b", "TD":"#ceb678", "TG":"#879747",
+                "TH":"#397839", "TJ":"#857f60", "TL":"#347039", "TM":"#d3bf8b", "TN":"#b5a264", "TV":"#35713a", "TW":"#357435",
+                "TZ":"#889848", "Tonga":"#347039", "TrinidadAndTobago":"#2f6b34", "Turkey":"#919c5e", "UA":"#849a48",
+                "UG":"#8d9d4d", "UY":"#81a351", "UZ":"#c4b67b", "UnitedKingdom":"#5d8d53", "UnitedStates":"#7a9a4f",
+                "VC":"#326e37", "VE":"#418041", "VN":"#418041", "Vanuatu":"#35713a", "XK":"#66864a", "YE":"#c6aa73",
+                "ZA":"#a39953", "ZM":"#8c9c4c", "ZW":"#8d9d4d"
+            };
+            // Farbe fuer kleine, weit entfernte Gebietsteile (Ueberseegebiete, Inseln) nach Breitengrad
+            function sat_zone_color(cy) {
+                const dy = Math.abs(cy - 500);          // 500 = Aequator in der viewBox
+                if (dy < 130) return "#3b8a42";         // tropisch
+                if (dy < 380) return "#6a9650";         // gemaessigt
+                if (dy < 450) return "#3e6140";         // boreal
+                return "#e3ecef";                       // Eis
+            }
+            function satellite_colors() {
+                const paths = Array.from(document.querySelectorAll("#map path"));
+                const key = (p) => (p.id || p.getAttribute("class") || "").replace(/"/g, "");
+                const groups = {};
+                paths.forEach((p) => {
+                    const b = p.getBBox(), k = key(p);
+                    const info = { p, k, cx: b.x + b.width / 2, cy: b.y + b.height / 2, a: b.width * b.height };
+                    (groups[k] = groups[k] || []).push(info);
+                });
+                Object.values(groups).forEach((g) => {
+                    const main = g.reduce((m, o) => (o.a > m.a ? o : m), g[0]);
+                    g.forEach((o) => {
+                        const near = Math.hypot(o.cx - main.cx, o.cy - main.cy) < 120;
+                        const own = SAT_COLORS[o.k];
+                        const color = !own ? sat_zone_color(o.cy) : (o === main || near || o.a > 5000) ? own : sat_zone_color(o.cy);
+                        o.p.dataset.sat = color;
+                        o.p.style.setProperty("fill", color);
+                    });
+                });
+            }
+
             function format_number(n) {
                 const units = ["", "K", "M", "B", "T"];
                 let i = 0;
@@ -4519,13 +4585,12 @@
                 });
             });
 
-            let ox = 0, oy = 0, sx, sy, dragging = false, moved = false;
-
+            // SKILLTREE DRAGGING
+            /*let ox = -855, oy = -665, sx, sy, dragging = false, moved = false;
             svg.addEventListener("pointerdown", e => {
                 dragging = true; moved = false;
                 sx = e.clientX - ox; sy = e.clientY - oy;
             });
-
             svg.addEventListener("pointermove", e => {
                 if (!dragging) return;
                 const nx = e.clientX - sx, ny = e.clientY - sy;
@@ -4537,9 +4602,89 @@
                 }
                 ox = nx; oy = ny;
                 world.setAttribute("transform", `translate(${ox},${oy})`);
+                console.log(ox, oy);
             });
+            svg.addEventListener("pointerup", () => { dragging = false; svg.style.cursor = "grab"; });*/
 
-            svg.addEventListener("pointerup", () => { dragging = false; svg.style.cursor = "grab"; });
+            let moved = false;   // bleibt global, deine click-Handler nutzen es
+
+            // Drag + Pinch-Zoom + Mausrad für jedes <svg> mit viewBox
+            function pan_zoom(el, { w0 = 400, min = 0.3, max = 6 } = {}) {
+                el.style.touchAction = "none";                 // wichtig fürs Handy
+                const ptrs = new Map();
+                let travel = 0;
+                const vb = () => el.viewBox.baseVal;
+                const fit = () => {                            // viewBox ans Seitenverhältnis anpassen
+                    const r = el.getBoundingClientRect();
+                    if (r.width) vb().height = vb().width * r.height / r.width;
+                };
+                const zoom_at = (cx, cy, f) => {               // f < 1 = reinzoomen
+                    const r = el.getBoundingClientRect(), v = vb(), s = v.width / r.width;
+                    const ux = v.x + (cx - r.left) * s, uy = v.y + (cy - r.top) * s;
+                    const nw = Math.min(w0 / min, Math.max(w0 / max, v.width * f)), k = nw / v.width;
+                    v.x = ux - (ux - v.x) * k;
+                    v.y = uy - (uy - v.y) * k;
+                    v.width = nw;
+                    v.height = nw * r.height / r.width;
+                };
+                el.addEventListener("pointerdown", (e) => {
+                    ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+                    if (ptrs.size === 1) { moved = false; travel = 0; }
+                    fit();
+                });
+                el.addEventListener("pointermove", (e) => {
+                    const p = ptrs.get(e.pointerId);
+                    if (!p) return;
+                    const s = vb().width / el.getBoundingClientRect().width;
+                    if (ptrs.size === 1) {
+                        const dx = e.clientX - p.x, dy = e.clientY - p.y;
+                        travel += Math.abs(dx) + Math.abs(dy);
+                        if (travel > 6) {                       // Tippen bleibt Tippen
+                            if (!moved) { moved = true; el.setPointerCapture(e.pointerId); }
+                            vb().x -= dx * s;
+                            vb().y -= dy * s;
+                        }
+                        p.x = e.clientX; p.y = e.clientY;
+                    } else if (ptrs.size === 2) {               // Pinch
+                        moved = true;
+                        const o = [...ptrs.entries()].find(([id]) => id !== e.pointerId)[1];
+                        const d0 = Math.hypot(p.x - o.x, p.y - o.y);
+                        const m0 = { x: (p.x + o.x) / 2, y: (p.y + o.y) / 2 };
+                        p.x = e.clientX; p.y = e.clientY;
+                        const d1 = Math.hypot(p.x - o.x, p.y - o.y);
+                        const m1 = { x: (p.x + o.x) / 2, y: (p.y + o.y) / 2 };
+                        vb().x -= (m1.x - m0.x) * s;
+                        vb().y -= (m1.y - m0.y) * s;
+                        if (d1 > 0) zoom_at(m1.x, m1.y, d0 / d1);
+                    }
+                });
+                const up = (e) => ptrs.delete(e.pointerId);
+                el.addEventListener("pointerup", up);
+                el.addEventListener("pointercancel", up);
+                el.addEventListener("wheel", (e) => {
+                    e.preventDefault();
+                    zoom_at(e.clientX, e.clientY, e.deltaY < 0 ? 0.9 : 1.1);
+                }, { passive: false });
+            }
+
+            // viewBox so setzen, dass (x, y) in der Mitte liegt; w = sichtbare Breite in Karteneinheiten
+            function center_on(el, x, y, w = 400) {
+                const r = el.getBoundingClientRect(), h = w * r.height / r.width;
+                el.setAttribute("viewBox", `${x - w / 2} ${y - h / 2} ${w} ${h}`);
+            }
+
+            pan_zoom(svg, { w0: 400 });                         // Skilltree
+            pan_zoom(id("map"), { w0: 2000, min: 0.5, max: 12 }); // Weltkarte, kein Umbau nötig
+
+            function toggle_upgrade_tree() {
+                upgrade_tree.classList.toggle("hidden");
+                const open = !upgrade_tree.classList.contains("hidden");
+                upgrade_tree_toggle.innerHTML = open ? "Forge" : "Upgrades";
+                if (open) {
+                    const g = byId["unlock_ghost"];
+                    center_on(svg, g[1], g[2], 400);
+                }
+            }
 
             function idle_ghost() {
                 hit_anvil();
@@ -4554,11 +4699,11 @@
                 }, IDLE_INTERVAL);
             }
 
-            function toggle_upgrade_tree() {
+            /*function toggle_upgrade_tree() {
                 upgrade_tree.classList.toggle("hidden");
                 upgrade_tree_toggle.innerHTML = upgrade_tree.classList.contains("hidden") ? "Upgrades" : "Forge";
-                if (!upgrade_tree.classList.contains("hidden")) ox = oy = 0, world.setAttribute("transform", "translate(0,0)");
-            }
+                if (!upgrade_tree.classList.contains("hidden")) ox = 0, oy = 0, world.setAttribute("transform", "translate(0, 0)");
+            }*/
 
             function toggle_game() {
                 game.classList.toggle('hidden');
@@ -4671,7 +4816,8 @@
                 crafting_bar_value.innerHTML = `${Math.trunc(crafting_percent)}%`;
             }
 
-            let viewBox = { x: 0, y: 0, width: 346, height: 400 };
+            // SKILLTREE ZOOMING
+            /*let viewBox = { x: 0, y: 0, width: 346, height: 400 };
             svg.addEventListener('wheel', (event) => {
                 // 1. Prevent the page from scrolling
                 event.preventDefault();
@@ -4698,7 +4844,7 @@
 
                 // 6. Apply the updated viewBox
                 svg.setAttribute('viewBox', `${viewBox.x} ${viewBox.y} ${viewBox.width} ${viewBox.height}`);
-            }, { passive: false });
+            }, { passive: false });*/
 
             function quiz(e = false) {
                 if (check) {
@@ -4761,7 +4907,7 @@
                             is_map_quiz ? id("quiz_wrapper").classList.remove("right", "wrong") : "",
                             is_map_quiz ? next.classList.remove("right", "wrong") : "",
                             is_map_quiz ? Array.prototype.slice.call(document.getElementsByTagName("path")).forEach((e) => {
-                                e.style.setProperty("fill", "#333");
+                                e.style.setProperty("fill", e.dataset.sat);
                             }) : "",
                             gsap_viewbox(),
                             update_save_icon(),
@@ -5011,9 +5157,13 @@
                         quiz(),
                         localStorage.removeItem("cache_pause_quiz"),
                         localStorage.removeItem("cache_pause_repeat"));
+                        
                 gold_value.innerHTML = "$ " + format_number(GOLD);
             }
-            window.addEventListener("load", init());
+            window.addEventListener("load", () => {
+                satellite_colors();
+                init();
+            });
         </script>
     </body>
 </html>
