@@ -1645,9 +1645,6 @@
                 width: 100%;
                 border-radius: 10px;
             }
-            #upgrade_tree > svg {
-                cursor: grab;
-            }
             g {
                 z-index: 999;
             }
@@ -1655,12 +1652,17 @@
                 fill: #808;
                 stroke: #808;
             }
+            g.locked {
+                opacity: .3;
+                cursor: not-allowed;
+            }
             #game {
                 position: relative;
                 height: 400px;
             }
             #game_wrapper {
                 border-radius: 10px;
+                overflow: hidden;
             }
             #game_wrapper.super_crit {
                 filter: url(#red_splash);
@@ -1681,6 +1683,7 @@
                 left: calc(50% - 50px);
                 top: 150px;
                 animation: var(--anvil_speed) anvil infinite;
+                user-select: none;
             }
             @keyframes anvil {
                 50% {
@@ -1698,7 +1701,6 @@
                 font-weight: bold;
                 animation-duration: .25s;
                 animation-fill-mode: forwards;
-                z-index: 999 !important;
             }
             .damage_log.small {
                 color: yellow;
@@ -1740,8 +1742,8 @@
             @keyframes dps_variant_6 {100% { transform: translateY(-55px) translateX(30px);}}
             #ghost {
                 position: absolute;
-                left: 250px;
-                top: 100px;
+                right: 20px;
+                top: 80px;
                 animation: var(--ghost_speed) ghost infinite;
                 animation-timing-function: ease-in;
             }
@@ -1782,30 +1784,40 @@
             }
             #level_bar,
             #crafting_bar {
-                width: 310px;
-                height: 30px;
+                --c1: #ffb347;
+                --c2: #ff7a00;
+                width: calc(100% - 30px);
+                height: 25px;
                 position: absolute;
-                left: calc(50% - 155px);
-                background-color: #000;
-                padding: 4px;
+                padding: 2px;
+                margin: 0 15px;
+                border-radius: 999px;
+                background: #0d0d10;
+                box-shadow: inset 0 1px 3px #000, 0 0 0 1px #ffffff14;
+                overflow: hidden;
             }
-            #level_bar {
-                bottom: 60px;
-            }
-            #crafting_bar {
-                bottom: 20px;
-            }
-            #level_bar > .progress {
-                background-color: orange;
-                width: 0;
+            #level_bar    { bottom: 50px; }
+            #crafting_bar { bottom: 20px; --c1: #ff6b6b; --c2: #d4202a; }
+
+            #level_bar > .progress,
+            #crafting_bar > .progress {
                 height: 100%;
-                transition: width .2s;
-            }
-            #crafting_bar  > .progress {
-                background-color: red;
                 width: 0;
-                height: 100%;
-                transition: width .2s;
+                border-radius: 999px;
+                background: linear-gradient(90deg, var(--c1), var(--c2));
+                box-shadow: 0 0 10px color-mix(in srgb, var(--c2) 70%, transparent);
+                transition: width .2s ease-out;
+                position: relative;
+            }
+            /* Glanzlicht auf der oberen Hälfte */
+            #level_bar > .progress::after,
+            #crafting_bar > .progress::after {
+                content: "";
+                position: absolute;
+                inset: 1px 3px auto 3px;
+                height: 40%;
+                border-radius: 999px;
+                background: linear-gradient(#ffffff55, #ffffff00);
             }
             #gold_value {
                 position: absolute;
@@ -1814,16 +1826,18 @@
                 font-weight: bold;
                 font-family: monospace;
                 font-size: 20px;
-                text-shadow: 2px 2px 0 #000000;
-            }
-            #level_value {
-                position: relative;
-                top: 285px;
+                text-shadow: 2px 2px 0 #000;
             }
             .bar_value {
                 position: absolute;
-                left: 10px;
-                top: 5px;
+                inset: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font: 700 11px/1 monospace;
+                color: #fff;
+                text-shadow: 0 1px 2px #000;
+                pointer-events: none;
             }
             .highlighted > polygon {
                 fill: #b0216b;
@@ -1836,18 +1850,17 @@
                 stroke:#cc3f47;
             }
             #map {
-                padding: 0 15px 15px;
-                width: 100%;
-                height: 250px;
+                padding-bottom: 15px;
+                width: 350px;
+                height: 200px;
                 display: none;
                 transition: viewBox 1s;
             }
-            #map_zoom_toggle {
+            #recenter_map {
                 display: none;
                 position: absolute;
-                top: 115px;
-                left: -8px;
-                transform: rotate(-90deg);
+                top: 105px;
+                left: 5px;
             }
             #counter {
                 position: absolute;
@@ -1902,7 +1915,6 @@
             .button {
                 width: 100%;
                 padding: 10px 25px;
-                cursor: pointer;
                 gap: 0.4rem;
                 font-weight: 700;
                 border-radius: 10px;
@@ -1914,6 +1926,7 @@
                 box-shadow: 0 30px 10px -20px rgb(0 0 0 / 0.2);
                 transition: background 0.3s;
                 text-align: center;
+                cursor: pointer;
             }
             .button:hover {
                 background-position: right center;
@@ -1942,7 +1955,6 @@
                 background: #222;
                 outline: none;
                 border: 2px solid #b0216b;
-                cursor: pointer;
             }
             #searchbar {
                 background-color: #222;
@@ -2000,7 +2012,12 @@
             .link:hover,
             #anvil:hover,
             #timer:hover,
-            g {
+            #recenter_map:hover,
+            .cw_input:hover,
+            .cw_input:checked:hover
+            .button:hover,
+            #guess_input:hover,
+            g:hover {
                 cursor: pointer;
             }
             #clear_cache_btn {
@@ -2137,7 +2154,6 @@
             .cw_input:hover {
                 background-color: #bbb;
                 transition-duration: 0s;
-                cursor: pointer;
             }
             .cw_input:checked {
                 background-color: #cc3f47;
@@ -2154,7 +2170,6 @@
             }
             .cw_input:checked:hover {
                 background-color: #b1373d;
-                cursor: pointer;
             }
         </style>
     </head>
@@ -2168,7 +2183,7 @@
                         <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAAA2CAYAAAAPrZGjAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAAA68AAAOvARgesX0AAAAZdEVYdFNvZnR3YXJlAFBhaW50Lk5FVCA1LjEuMTITAUd0AAAAuGVYSWZJSSoACAAAAAUAGgEFAAEAAABKAAAAGwEFAAEAAABSAAAAKAEDAAEAAAACAAAAMQECABEAAABaAAAAaYcEAAEAAABsAAAAAAAAAKldAADoAwAAqV0AAOgDAABQYWludC5ORVQgNS4xLjEyAAADAACQBwAEAAAAMDIzMAGgAwABAAAAAQAAAAWgBAABAAAAlgAAAAAAAAACAAEAAgAEAAAAUjk4AAIABwAEAAAAMDEwMAAAAAA/Pz+4IhZHHQAABF9JREFUeF7tnFlsDVEYx7/be7XUUqVaaxUtUaSEqq1BI9EQxC6akDRChBdUxJZIvNmFCC9SEiKk4kHKgzVBSBA7ES+WoKjidrPU9X3nHPd22hm3NTPt3M73S36Z72ubvpx/7pw559wBm4lDD6Kv0YCOP9C76DyUaWH40Juo3sDrmY8yLYjZqN5AG/kOZZoYj7rawVZ0kywBknskgzcqSnWST2Wl4C/3q07QA30rS6YpsDMA+9CVsgRYt2JdvQAUXyqGe4/vq06Qhr6QJdMUaEfEWjqpq6BN6zaqYpyEnQEYoK7g9XqhXWw71TFOwq4A0GgPliVA1y5dweejhwLGadgVgKlojCwBUnqlqIpxGnYFYIW6CjLSM1TFOA07AjAJzZYlQMcOHSGtD03uGSdidQDo3k9Lv0FyxuZAVJ3HP8Y5WDky9L+Oof1Eh3SO7wyjR4xWHeNErApANHocnS46xOPxwIIZCyC6Ff2KcSpWBKAvehWdLzrF5AmToX/f/qpjnIrZAExBaTt3lOgUmRmZkDshV3WMkzETALrXn0Rpzz9IdlY25M3KE7cAxvmYCQBt9LSVJUBMTAwsnLkQ5kydw4MfQZgJwFB1FY95BcsKIGtYlvoJEymYCUCsuoLP64PEhETVMZGE2UkgE+FwAFwOB8DlhJuu0yb+QDRJdFr2o+LQB632bd+8nUpDAoEAfPhUojqJzpGwxWhDzwS+Qp/Lsh60/Egz0uCWtIv5jD5Ef4quDv8KwDD0BBp2Oc/CADSG3ygdJT8iuhAU2msoP5KEoO9lLEKviK4WRgFojz5Ck0UXhmYKAHTrFPe0aMPKPaoVXH7wtNvGo6e3qJYJQZ8EdEpLc/zeaA4wEW3Q4Dcn07KGDgRP4FBtx6SnbkmK76D+gqkFHdKdJssQRp8Aq9BdsgSYkjkEUhITVCcpun4HSr58E7VVnwB5E0dBXGzDTg/3TkqAcelpoLfoWOqvgCsPnkHVd/rmmXv5+NUPp67dVp1gB7pWlhKjAKxB6Y8F2/LnwrhB2lM9S/YWwpNXcr5mVQBOrl8OPRPiVceY5dmb95C/+7DqBDvRAllK+DHQ5XAAXA4HwOVwAFyO0SRwNUoTBsHsscMhtbt2t+/oxRvw7vNXUVs1CVyaOx7i2wc3GRmTlJR9g8IL11UnqDcJNArALLRIluFproUgptHQF3YOyFJidAu4jGpHi4l0ytGzsgxhFIAylN7bwy9raBnQMnAeShtoGoxuAX+hM3+0qZIqOi3rUfGtTwtvAZvRD7JkLOIlSu9qkhO2OoQLwL+4hY6kwsIA8BtCmhh+DHQ5HACXwwFwORwAl8MBcDkcAJdjJgC/1BVqftdAaVkpVFZVGlpRWQHV36uDVlVXgb+cFqc06J5cZZxJIar3zt//lc6X8dskIgh690sNqjeY/2PwDCITOdBXxOlWoDegjfE8yu+SbQbMLAX/ZQhKGw20L9DYOcUX9Bx6BqUgMAzDMAzDMLYD8AdTdIJ1UMAHhgAAAABJRU5ErkJggg==" alt="" width="128" height="54" />
                     </div>
 
-                    <div id="ghost">
+                    <div id="ghost" class="hidden">
                         <img src="data:image/png;base64,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" alt="" width="106" height="109" />
                     </div>
 
@@ -2177,12 +2192,10 @@
                             <img src="data:image/png;base64,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" alt="" width="122" height="73" />
                         </div>
                     </div>
-                    
-                    <div id="level_value">LEVEL 1</div>
 
                     <div id="level_bar">
                         <div class="progress" id="level_bar_progress"></div>
-                        <div class="bar_value" id="level_bar_value">0%</div>
+                        <div class="bar_value" id="level_bar_value">0% (LEVEL 1)</div>
                     </div>
 
                     <div id="crafting_bar">
@@ -2209,9 +2222,9 @@
                 <div id="skip" class="emoji" onclick='confirm("Zu Wiederholungen springen?")&&skip()'>⏩</div>
                 <div id="pause" class="emoji" onclick='confirm("Aktuellen Stand speichern?")&&_pause()'>⏸</div>
                 <div id="back" class="emoji" onclick='confirm("Zurück zur Übersicht?")&&location.reload(!0)'>🔙</div>
-                <div id="map_zoom_toggle" class="checkbox_wrapper">
-                    <input type="checkbox" class="cw_input" onchange="toggle_gsap()" checked="checked" autocomplete="off">
-                </div>
+
+                <div id="recenter_map" class="emoji" onclick="gsap_viewbox()">🎯</div>
+
                 <div id="vokabel"></div>
                 <div id="translation"></div>
                 <form onsubmit="enter_guess(event)">
@@ -4174,14 +4187,13 @@
                 back = id("back"),
                 pause = id("pause"),
                 clear_cache_btn = id("clear_cache_btn"),
-                map_zoom_toggle = id("map_zoom_toggle"),
+                recenter_map = id("recenter_map"),
                 stammformen = id("stammformen"),
                 guess_input = id("guess_input"),
                 item_bar_progress = id("item_bar_progress"),
                 crafting_bar_progress = id("crafting_bar_progress"),
                 item_bar_value = id("item_bar_value"),
                 crafting_bar_value = id("crafting_bar_value"),
-                level_value = id("level_value"),
                 gold_value = id("gold_value"),
                 anvil = id("anvil"),
                 anvil_wrapper = id("anvil_wrapper"),
@@ -4190,6 +4202,7 @@
                 upgrade_tree_toggle = id("upgrade_tree_toggle"),
                 game = id("game"),
                 game_wrapper = id("game_wrapper"),
+                ghost = id("ghost"),
                 cache = JSON.parse(localStorage.getItem("cache") || "[]"),
                 quiz_pool = [],
                 repeat_pool = [],
@@ -4204,7 +4217,6 @@
                 done = false,
                 is_repetition = false,
                 is_map_quiz = false,
-                is_zoomed_in = true,
                 guess = "",
                 hit_counter = 0,
                 max_hits = 12,
@@ -4220,11 +4232,13 @@
                 STAT_GOLD_CHANCE = 0,
                 STAT_GOLD_FACTOR = 1,
                 STAT_UNREG_CHANCE = 0,
-                GOLD = 200,
+                GOLD = 0,
                 IDLE_INTERVAL = 1000,
                 DPS_DELETE_CD = 300,
+                SUPER_CRIT_THRESHOLD = 1.48,
                 ghost_unlocked = false,
-                critTimeout = null;
+                critTimeout = null,
+                moved = false;
 
             function get_combined_bbox(e) {
                 if (!e || 0 === e.length) return null;
@@ -4256,25 +4270,17 @@
                         c = document.querySelectorAll(`path.${quiz_pool[pair][2]}`);
                     }
                 }
-                // If country or countries found, align viewbox either around it/them or worldwide, depending on is_zoomed_in
+                // If country or countries found, fit viewbox around it/them
                 if (c != null) {
                     let t = get_combined_bbox(c);
-                    if (is_zoomed_in) gsap.to("#map", {
+                    gsap.to("#map", {
                         attr: { viewBox: `${t.x} ${t.y} ${t.w} ${t.h}` },
                         duration: 0.5,
                         ease: "power2.out",
                     });
-                    else gsap.to("#map", {
-                        attr: { viewBox: "0 0 2000 857" },
-                        duration: 0.25,
-                        ease: "power2.out"
-                    });
                 }
             }
-            function toggle_gsap() {
-                is_zoomed_in = !is_zoomed_in;
-                gsap_viewbox();
-            }
+
             function enter_guess(event = null) {
                 if (event != null) event.preventDefault();
                 let v = guess_input.value.trim().replace("/</g", "&gt;").replace("/>/g", "&lt;");
@@ -4499,6 +4505,21 @@
                 mk("line", { x1: x, y1: y, x2: t[1], y2: t[2], stroke: "#666", "stroke-width": 2 }, world);
             }));
 
+            // Vorgänger-Map: id -> Liste der Nodes, die auf ihn zeigen
+            const parents = {};
+            skills.forEach((s) => s[5].forEach((c) => (parents[c] = parents[c] || []).push(s[0])));
+
+            function is_unlocked(sid) {
+                return sid === "unlock_ghost" ||
+                    (parents[sid] || []).some((p) => document.getElementById(p).classList.contains("bought"));
+            }
+            function refresh_locks() {
+                skills.forEach((s) => {
+                    const el = document.getElementById(s[0]);
+                    el.classList.toggle("locked", !el.classList.contains("bought") && !is_unlocked(s[0]));
+                });
+            }
+
             const hexPoints = Array.from({ length: 6 }, (_, i) => {
                 const a = Math.PI / 180 * (60 * i - 30);
                 return (R * Math.cos(a)).toFixed(1) + "," + (R * Math.sin(a)).toFixed(1);
@@ -4511,6 +4532,7 @@
                 mk("text", { y: 12, "text-anchor": "middle", "font-size": 6, fill: "#fff", "font-family": "sans-serif" }, g).textContent = label + " ($" + price + ")";
                 g.addEventListener("click", () => {
                     if (moved) return;
+                    if (g.classList.contains("locked")) return;
                     // SELECT
                     if (!g.classList.contains("highlighted")) {
                         // Switch selection/reset previous
@@ -4531,9 +4553,11 @@
                         GOLD -= match[6];
                         g.classList.remove("highlighted");
                         g.classList.add("bought");
+                        refresh_locks();
 
                         if (g.id === 'unlock_ghost') {
                             idle_ghost();
+                            ghost.classList.remove("hidden");
                         } else if (g.id === 'ghost_5_2') {
                             UNLOCKED_COMBOS = true; // TODO
                         } else {
@@ -4585,40 +4609,18 @@
                 });
             });
 
-            // SKILLTREE DRAGGING
-            /*let ox = -855, oy = -665, sx, sy, dragging = false, moved = false;
-            svg.addEventListener("pointerdown", e => {
-                dragging = true; moved = false;
-                sx = e.clientX - ox; sy = e.clientY - oy;
-            });
-            svg.addEventListener("pointermove", e => {
-                if (!dragging) return;
-                const nx = e.clientX - sx, ny = e.clientY - sy;
-                if (!moved) {
-                    if (Math.abs(nx - ox) + Math.abs(ny - oy) < 4) return;
-                    moved = true;
-                    svg.setPointerCapture(e.pointerId);
-                    svg.style.cursor = "grabbing";
-                }
-                ox = nx; oy = ny;
-                world.setAttribute("transform", `translate(${ox},${oy})`);
-                console.log(ox, oy);
-            });
-            svg.addEventListener("pointerup", () => { dragging = false; svg.style.cursor = "grab"; });*/
-
-            let moved = false;   // bleibt global, deine click-Handler nutzen es
-
             // Drag + Pinch-Zoom + Mausrad für jedes <svg> mit viewBox
             function pan_zoom(el, { w0 = 400, min = 0.3, max = 6 } = {}) {
-                el.style.touchAction = "none";                 // wichtig fürs Handy
+                el.style.touchAction = "none";
+                el.style.cursor = "grab";
                 const ptrs = new Map();
                 let travel = 0;
                 const vb = () => el.viewBox.baseVal;
-                const fit = () => {                            // viewBox ans Seitenverhältnis anpassen
+                const fit = () => {
                     const r = el.getBoundingClientRect();
                     if (r.width) vb().height = vb().width * r.height / r.width;
                 };
-                const zoom_at = (cx, cy, f) => {               // f < 1 = reinzoomen
+                const zoom_at = (cx, cy, f) => {
                     const r = el.getBoundingClientRect(), v = vb(), s = v.width / r.width;
                     const ux = v.x + (cx - r.left) * s, uy = v.y + (cy - r.top) * s;
                     const nw = Math.min(w0 / min, Math.max(w0 / max, v.width * f)), k = nw / v.width;
@@ -4682,7 +4684,7 @@
                 upgrade_tree_toggle.innerHTML = open ? "Forge" : "Upgrades";
                 if (open) {
                     const g = byId["unlock_ghost"];
-                    center_on(svg, g[1], g[2], 400);
+                    center_on(svg, g[1], g[2], 250);
                 }
             }
 
@@ -4698,12 +4700,6 @@
                     idle_ghost();
                 }, IDLE_INTERVAL);
             }
-
-            /*function toggle_upgrade_tree() {
-                upgrade_tree.classList.toggle("hidden");
-                upgrade_tree_toggle.innerHTML = upgrade_tree.classList.contains("hidden") ? "Upgrades" : "Forge";
-                if (!upgrade_tree.classList.contains("hidden")) ox = 0, oy = 0, world.setAttribute("transform", "translate(0, 0)");
-            }*/
 
             function toggle_game() {
                 game.classList.toggle('hidden');
@@ -4744,7 +4740,7 @@
                     // DPS COLOR
                     if (was_crit) {
                         // FLASH SCREEN MONOCHROME+RED ON "SUPER-CRIT"
-                        if (damage_dealt > STAT_DAMAGE * STAT_CRIT_FACTOR * 1.48) {
+                        if (damage_dealt > STAT_DAMAGE * STAT_CRIT_FACTOR * SUPER_CRIT_THRESHOLD) {
                             clearTimeout(critTimeout);
 
                             damage_log.classList.add("super_crit");
@@ -4805,46 +4801,15 @@
                 }
 
                 gold_value.innerHTML = `$ ${format_number(GOLD)}`;
-                level_value.innerHTML = `LEVEL ${LEVEL}`;
 
                 let level_percent = LEVEL_DAMAGE / LEVEL_HP * 100;
                 level_bar_progress.style.width = `${Math.trunc(level_percent)}%`;
-                level_bar_value.innerHTML = `${Math.trunc(level_percent)}%`;
+                level_bar_value.innerHTML = `${Math.trunc(level_percent)}% (LEVEL ${LEVEL})`;
 
                 let crafting_percent = hit_counter / max_hits * 100;
                 crafting_bar_progress.style.width = `${Math.trunc(crafting_percent)}%`;
                 crafting_bar_value.innerHTML = `${Math.trunc(crafting_percent)}%`;
             }
-
-            // SKILLTREE ZOOMING
-            /*let viewBox = { x: 0, y: 0, width: 346, height: 400 };
-            svg.addEventListener('wheel', (event) => {
-                // 1. Prevent the page from scrolling
-                event.preventDefault();
-
-                // 2. Set zoom speed (smaller = smoother)
-                const zoomIntensity = 0.1;
-                const direction = event.deltaY < 0 ? 1 : -1; // 1 = zoom in, -1 = zoom out
-                const scaleFactor = 1 - direction * zoomIntensity;
-
-                // 3. Calculate mouse position relative to the SVG element (0 to 1)
-                const rect = svg.getBoundingClientRect();
-                const mouseXRatio = (event.clientX - rect.left) / rect.width;
-                const mouseYRatio = (event.clientY - rect.top) / rect.height;
-
-                // 4. Calculate new dimensions
-                const newWidth = viewBox.width * scaleFactor;
-                const newHeight = viewBox.height * scaleFactor;
-
-                // 5. Adjust X and Y so the point under the cursor stays stationary
-                viewBox.x += (viewBox.width - newWidth) * mouseXRatio;
-                viewBox.y += (viewBox.height - newHeight) * mouseYRatio;
-                viewBox.width = newWidth;
-                viewBox.height = newHeight;
-
-                // 6. Apply the updated viewBox
-                svg.setAttribute('viewBox', `${viewBox.x} ${viewBox.y} ${viewBox.width} ${viewBox.height}`);
-            }, { passive: false });*/
 
             function quiz(e = false) {
                 if (check) {
@@ -4894,7 +4859,7 @@
                             pause.classList.add("hidden"),
                             _skip.classList.add("hidden"),
                             id("map").classList.remove("showme"),
-                            map_zoom_toggle.classList.remove("showme"),
+                            recenter_map.classList.remove("showme"),
                             _fav.classList.add("hidden"))
                         : (count++,
                             (counter.innerHTML = is_repetition ? "WDH " + count + "/" + initial_max : count + "/" + initial_max),
@@ -4974,7 +4939,7 @@
                     id("map").classList.add("showme");
                     repeat.classList.add("hidden");
                     options.classList.add("hidden");
-                    map_zoom_toggle.classList.add("showme");
+                    recenter_map.classList.add("showme");
                     guess_input.classList.add("showme");
                     _skip.classList.add("disabled");
                     pause.classList.add("disabled");
@@ -5162,6 +5127,7 @@
             }
             window.addEventListener("load", () => {
                 satellite_colors();
+                refresh_locks();
                 init();
             });
         </script>
