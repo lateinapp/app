@@ -1812,6 +1812,9 @@
                 top: 10px;
                 left: 10px;
                 font-weight: bold;
+                font-family: monospace;
+                font-size: 20px;
+                text-shadow: 2px 2px 0 #000000;
             }
             #level_value {
                 position: relative;
@@ -4210,9 +4213,13 @@
                 LEVEL_HP_FACTOR = 1.02,
                 LEVEL_HP = BASE_HP * Math.pow(LEVEL_HP_FACTOR, LEVEL - 1),
                 LEVEL_DAMAGE = 0,
-                STAT_ATK = 1,
-                STAT_CRIT_CHANCE = 0.2,
-                STAT_CRIT_FACTOR = 2.5,
+                STAT_DAMAGE = 1,
+                STAT_CRIT_CHANCE = 0,
+                STAT_CRIT_FACTOR = 1.5,
+                STAT_DMG_PERCENT = 0,
+                STAT_GOLD_CHANCE = 0,
+                STAT_GOLD_FACTOR = 1,
+                STAT_UNREG_CHANCE = 0,
                 GOLD = 200,
                 IDLE_INTERVAL = 1000,
                 DPS_DELETE_CD = 300,
@@ -4287,139 +4294,126 @@
             }
 
             const skills = [
-            ["unlock_ghost", 1000, 1000, "👻", "Unlock Ghost", ["hammer_1_1", "hammer_1_2", "hammer_1_3", "ghost_1_1", "ghost_1_2", "anvil_1_1", "anvil_1_2"], 15],
+                ["unlock_ghost", 1000, 1000, "👻", "Unlock Ghost", ["hammer_1_1", "hammer_1_2", "hammer_1_3", "ghost_1_1", "ghost_1_2", "anvil_1_1", "anvil_1_2"], 15],
 
-            // === HAMMER TREE (Norden / Oben: Damage, Crit Chance, Crit Factor) ===
-            ["hammer_1_1", 926, 905, "💥", "Damage", ["hammer_2_1", "hammer_2_2"], 10],
-            ["hammer_1_2", 1000, 880, "💥", "Damage", ["hammer_2_3", "hammer_2_4"], 10],
-            ["hammer_1_3", 1074, 905, "💥", "Damage", ["hammer_2_4"], 10],
-            ["hammer_2_1", 845, 851, "💥", "Damage", ["hammer_3_1", "hammer_3_2"], 35],
-            ["hammer_2_2", 943, 793, "💥", "Crit Chance", ["hammer_3_2", "hammer_3_3"], 35],
-            ["hammer_2_3", 1057, 793, "💥", "Crit Chance", ["hammer_3_4", "hammer_3_5"], 35],
-            ["hammer_2_4", 1155, 851, "💥", "Damage", ["hammer_3_5"], 35],
-            ["hammer_3_1", 777, 785, "💥", "Damage", ["hammer_4_1"], 140],
-            ["hammer_3_2", 879, 715, "💥", "Crit Factor", ["hammer_4_2"], 140],
-            ["hammer_3_3", 1000, 690, "💥", "Damage", ["hammer_4_3"], 140],
-            ["hammer_3_4", 1121, 715, "💥", "Crit Factor", ["hammer_4_4"], 140],
-            ["hammer_3_5", 1223, 785, "💥", "Damage", ["hammer_4_5"], 140],
-            ["hammer_4_1", 709, 719, "💥", "Crit Chance", ["hammer_5_1", "hammer_5_2"], 550],
-            ["hammer_4_2", 842, 627, "💥", "Damage", ["hammer_5_2", "hammer_5_3"], 550],
-            ["hammer_4_3", 1000, 595, "💥", "Crit Chance", ["hammer_5_4", "hammer_5_5"], 550],
-            ["hammer_4_4", 1158, 627, "💥", "Damage", ["hammer_5_5", "hammer_5_6"], 550],
-            ["hammer_4_5", 1291, 719, "💥", "Crit Chance", ["hammer_5_6"], 550],
-            ["hammer_5_1", 640, 653, "💥", "Damage", ["hammer_6_1"], 2200],
-            ["hammer_5_2", 768, 557, "💥", "Crit Factor", ["hammer_6_2"], 2200],
-            ["hammer_5_3", 920, 506, "💥", "Damage", ["hammer_6_3"], 2200],
-            ["hammer_5_4", 1080, 506, "💥", "Damage", ["hammer_6_4"], 2200],
-            ["hammer_5_5", 1232, 557, "💥", "Crit Factor", ["hammer_6_5"], 2200],
-            ["hammer_5_6", 1360, 653, "💥", "Damage", ["hammer_6_6"], 2200],
-            ["hammer_6_1", 572, 587, "💥", "Crit Chance", ["hammer_7_1", "hammer_6_2"], 9000],
-            ["hammer_6_2", 724, 473, "💥", "Damage", ["hammer_7_2", "hammer_7_1", "hammer_6_3"], 9000],
-            ["hammer_6_3", 905, 413, "💥", "Crit Factor", ["hammer_7_3", "hammer_7_2", "hammer_6_4"], 9000],
-            ["hammer_6_4", 1095, 413, "💥", "Crit Factor", ["hammer_7_3", "hammer_7_2", "hammer_6_5"], 9000],
-            ["hammer_6_5", 1276, 473, "💥", "Damage", ["hammer_7_4", "hammer_7_3", "hammer_6_6"], 9000],
-            ["hammer_6_6", 1428, 587, "💥", "Crit Chance", ["hammer_7_5"], 9000],
-            ["hammer_7_1", 504, 521, "💥", "Damage", ["hammer_8_1"], 36000],
-            ["hammer_7_2", 730, 365, "💥", "Crit Chance", ["hammer_8_2"], 36000],
-            ["hammer_7_3", 1000, 310, "💥", "Damage", ["hammer_8_3"], 36000],
-            ["hammer_7_4", 1270, 365, "💥", "Crit Chance", ["hammer_8_4"], 36000],
-            ["hammer_7_5", 1496, 521, "💥", "Damage", ["hammer_8_5"], 36000],
-            ["hammer_8_1", 435, 455, "💥", "Crit Factor", ["hammer_9_1"], 145000],
-            ["hammer_8_2", 693, 277, "💥", "Damage", ["hammer_9_2"], 145000],
-            ["hammer_8_3", 1000, 215, "💥", "Crit Factor", ["hammer_9_3"], 145000],
-            ["hammer_8_4", 1307, 277, "💥", "Damage", ["hammer_9_3"], 145000],
-            ["hammer_8_5", 1565, 455, "💥", "Crit Factor", ["hammer_9_4"], 145000],
-            ["hammer_9_1", 367, 389, "💥", "Damage", ["hammer_10_1"], 580000],
-            ["hammer_9_2", 767, 151, "💥", "Crit Chance", ["hammer_10_2"], 580000],
-            ["hammer_9_3", 1233, 151, "💥", "Crit Chance", ["hammer_10_2"], 580000],
-            ["hammer_9_4", 1633, 389, "💥", "Damage", ["hammer_10_3"], 580000],
-            ["hammer_10_1", 299, 323, "💥", "Damage", [], 1950000],
-            ["hammer_10_2", 1000, 25, "💥", "Crit Factor", [], 1950000],
-            ["hammer_10_3", 1701, 323, "💥", "Damage", [], 1950000],
+                // === HAMMER TREE (Norden / Oben: Damage, Crit Chance, Crit Factor) ===
+                ["hammer_1_1", 926, 905, "💥", "Damage", ["hammer_2_1", "hammer_2_2"], 10],
+                ["hammer_1_2", 1000, 880, "💥", "Damage", ["hammer_2_3", "hammer_2_4"], 10],
+                ["hammer_1_3", 1074, 905, "💥", "Damage", ["hammer_2_4"], 10],
+                ["hammer_2_1", 845, 851, "💥", "Damage", ["hammer_3_1", "hammer_3_2"], 35],
+                ["hammer_2_2", 943, 793, "💥", "Crit Chance", ["hammer_3_2", "hammer_3_3"], 35],
+                ["hammer_2_3", 1057, 793, "💥", "Crit Chance", ["hammer_3_4", "hammer_3_5"], 35],
+                ["hammer_2_4", 1155, 851, "💥", "Damage", ["hammer_3_5"], 35],
+                ["hammer_3_1", 777, 785, "💥", "Damage", ["hammer_4_1"], 140],
+                ["hammer_3_2", 879, 715, "💥", "Crit Factor", ["hammer_4_2"], 140],
+                ["hammer_3_3", 1000, 690, "💥", "Damage", ["hammer_4_3"], 140],
+                ["hammer_3_4", 1121, 715, "💥", "Crit Factor", ["hammer_4_4"], 140],
+                ["hammer_3_5", 1223, 785, "💥", "Damage", ["hammer_4_5"], 140],
+                ["hammer_4_1", 709, 719, "💥", "Crit Chance", ["hammer_5_1", "hammer_5_2"], 550],
+                ["hammer_4_2", 842, 627, "💥", "Damage", ["hammer_5_2", "hammer_5_3"], 550],
+                ["hammer_4_3", 1000, 595, "💥", "Crit Chance", ["hammer_5_4", "hammer_5_5"], 550],
+                ["hammer_4_4", 1158, 627, "💥", "Damage", ["hammer_5_5", "hammer_5_6"], 550],
+                ["hammer_4_5", 1291, 719, "💥", "Crit Chance", ["hammer_5_6"], 550],
+                ["hammer_5_1", 640, 653, "💥", "Damage", ["hammer_6_1"], 2200],
+                ["hammer_5_2", 768, 557, "💥", "Crit Factor", ["hammer_6_2"], 2200],
+                ["hammer_5_3", 920, 506, "💥", "Damage", ["hammer_6_3"], 2200],
+                ["hammer_5_4", 1080, 506, "💥", "Damage", ["hammer_6_4"], 2200],
+                ["hammer_5_5", 1232, 557, "💥", "Crit Factor", ["hammer_6_5"], 2200],
+                ["hammer_5_6", 1360, 653, "💥", "Damage", ["hammer_6_6"], 2200],
+                ["hammer_6_1", 572, 587, "💥", "Crit Chance", ["hammer_7_1", "hammer_6_2"], 9000],
+                ["hammer_6_2", 724, 473, "💥", "Damage", ["hammer_7_2", "hammer_7_1", "hammer_6_3"], 9000],
+                ["hammer_6_3", 905, 413, "💥", "Crit Factor", ["hammer_7_3", "hammer_7_2", "hammer_6_4"], 9000],
+                ["hammer_6_4", 1095, 413, "💥", "Crit Factor", ["hammer_7_3", "hammer_7_2", "hammer_6_5"], 9000],
+                ["hammer_6_5", 1276, 473, "💥", "Damage", ["hammer_7_4", "hammer_7_3", "hammer_6_6"], 9000],
+                ["hammer_6_6", 1428, 587, "💥", "Crit Chance", ["hammer_7_5"], 9000],
+                ["hammer_7_1", 504, 521, "💥", "Damage", ["hammer_8_1"], 36000],
+                ["hammer_7_2", 730, 365, "💥", "Crit Chance", ["hammer_8_2"], 36000],
+                ["hammer_7_3", 1000, 310, "💥", "Damage", ["hammer_8_3"], 36000],
+                ["hammer_7_4", 1270, 365, "💥", "Crit Chance", ["hammer_8_4"], 36000],
+                ["hammer_7_5", 1496, 521, "💥", "Damage", ["hammer_8_5"], 36000],
+                ["hammer_8_1", 435, 455, "💥", "Crit Factor", ["hammer_9_1"], 145000],
+                ["hammer_8_2", 693, 277, "💥", "Damage", ["hammer_9_2"], 145000],
+                ["hammer_8_3", 1000, 215, "💥", "Crit Factor", ["hammer_9_3"], 145000],
+                ["hammer_8_4", 1307, 277, "💥", "Damage", ["hammer_9_3"], 145000],
+                ["hammer_8_5", 1565, 455, "💥", "Crit Factor", ["hammer_9_4"], 145000],
+                ["hammer_9_1", 367, 389, "💥", "Damage", ["hammer_10_1"], 580000],
+                ["hammer_9_2", 767, 151, "💥", "Crit Chance", ["hammer_10_2"], 580000],
+                ["hammer_9_3", 1233, 151, "💥", "Crit Chance", ["hammer_10_2"], 580000],
+                ["hammer_9_4", 1633, 389, "💥", "Damage", ["hammer_10_3"], 580000],
+                ["hammer_10_1", 299, 323, "💥", "Damage", [], 1950000],
+                ["hammer_10_2", 1000, 25, "💥", "Crit Factor", [], 1950000],
+                ["hammer_10_3", 1701, 323, "💥", "Damage", [], 1950000],
 
-            // === GHOST TREE (Südosten / Unten Rechts: Attack Speed, Damage %, Combos) ===
-            ["ghost_1_1", 1119, 987, "⏱️", "Attack Speed", ["ghost_2_1", "ghost_2_2"], 10],
-            ["ghost_1_2", 1049, 1110, "🔥", "Damage Percent", ["ghost_2_3"], 10],
-            ["ghost_2_1", 1209, 948, "⏱️", "Attack Speed", ["ghost_3_1"], 35],
-            ["ghost_2_2", 1186, 1108, "🔥", "Damage Percent", ["ghost_3_2", "ghost_3_1"], 35],
-            ["ghost_2_3", 1059, 1207, "⏱️", "Attack Speed", ["ghost_3_3"], 35],
-            ["ghost_3_1", 1301, 925, "🔥", "Damage Percent", ["ghost_4_1", "ghost_4_2"], 140],
-            ["ghost_3_2", 1268, 1155, "⏱️", "Attack Speed", ["ghost_4_3", "ghost_4_4"], 140],
-            ["ghost_3_3", 1085, 1298, "🔥", "Damage Percent", ["ghost_4_4"], 140],
-            ["ghost_4_1", 1393, 902, "⏱️", "Attack Speed", ["ghost_5_1"], 550],
-            ["ghost_4_2", 1391, 1107, "🔥", "Damage Percent", ["ghost_5_2", "ghost_5_1"], 550],
-            ["ghost_4_3", 1288, 1285, "🔥", "Damage Percent", ["ghost_5_2", "ghost_5_1"], 550],
-            ["ghost_4_4", 1112, 1389, "⏱️", "Attack Speed", ["ghost_5_3"], 550],
-            ["ghost_5_1", 1485, 879, "⏱️", "Attack Speed", ["ghost_6_1", "ghost_6_2"], 2200],
-            ["ghost_5_2", 1433, 1250, "💥", "Unlock Combos", ["ghost_6_3", "ghost_6_4"], 3500],
-            ["ghost_5_3", 1138, 1481, "🔥", "Damage Percent", ["ghost_6_4"], 2200],
-            ["ghost_6_1", 1577, 856, "🔥", "Damage Percent", ["ghost_7_1", "ghost_6_2"], 9000],
-            ["ghost_6_2", 1574, 1157, "⏱️", "Attack Speed", ["ghost_7_2", "ghost_7_1", "ghost_6_3"], 9000],
-            ["ghost_6_3", 1423, 1418, "⏱️", "Attack Speed", ["ghost_7_3", "ghost_7_2", "ghost_6_4"], 9000],
-            ["ghost_6_4", 1164, 1572, "🔥", "Damage Percent", ["ghost_7_4"], 9000],
-            ["ghost_7_1", 1670, 833, "⏱️", "Attack Speed", ["ghost_8_1"], 36000],
-            ["ghost_7_2", 1665, 1182, "🔥", "Damage Percent", ["ghost_8_2"], 36000],
-            ["ghost_7_3", 1491, 1485, "🔥", "Damage Percent", ["ghost_8_2"], 36000],
-            ["ghost_7_4", 1190, 1663, "⏱️", "Attack Speed", ["ghost_8_3"], 36000],
-            ["ghost_8_1", 1762, 810, "🔥", "Damage Percent", ["ghost_9_1"], 145000],
-            ["ghost_8_2", 1680, 1392, "⏱️", "Attack Speed", ["ghost_9_2"], 145000],
-            ["ghost_8_3", 1216, 1755, "🔥", "Damage Percent", ["ghost_9_3"], 145000],
-            ["ghost_9_1", 1854, 787, "⏱️", "Attack Speed", ["ghost_10_1"], 580000],
-            ["ghost_9_2", 1762, 1440, "🔥", "Damage Percent", ["ghost_10_2"], 580000],
-            ["ghost_9_3", 1243, 1846, "⏱️", "Attack Speed", ["ghost_10_2"], 580000],
-            ["ghost_10_1", 1946, 764, "⏱️", "Attack Speed", [], 1950000],
-            ["ghost_10_2", 1269, 1937, "🔥", "Damage Percent", [], 1950000],
+                // === GHOST TREE (Südosten / Unten Rechts: Attack Speed, Damage %, Combos) ===
+                ["ghost_1_1", 1119, 987, "⏱️", "Attack Speed", ["ghost_2_1", "ghost_2_2"], 10],
+                ["ghost_1_2", 1049, 1110, "🔥", "Damage Percent", ["ghost_2_3"], 10],
+                ["ghost_2_1", 1209, 948, "⏱️", "Attack Speed", ["ghost_3_1"], 35],
+                ["ghost_2_2", 1186, 1108, "🔥", "Damage Percent", ["ghost_3_2", "ghost_3_1"], 35],
+                ["ghost_2_3", 1059, 1207, "⏱️", "Attack Speed", ["ghost_3_3"], 35],
+                ["ghost_3_1", 1301, 925, "🔥", "Damage Percent", ["ghost_4_1", "ghost_4_2"], 140],
+                ["ghost_3_2", 1268, 1155, "⏱️", "Attack Speed", ["ghost_4_3", "ghost_4_4"], 140],
+                ["ghost_3_3", 1085, 1298, "🔥", "Damage Percent", ["ghost_4_4"], 140],
+                ["ghost_4_1", 1393, 902, "⏱️", "Attack Speed", ["ghost_5_1"], 550],
+                ["ghost_4_2", 1391, 1107, "🔥", "Damage Percent", ["ghost_5_2", "ghost_5_1"], 550],
+                ["ghost_4_3", 1288, 1285, "🔥", "Damage Percent", ["ghost_5_2", "ghost_5_1"], 550],
+                ["ghost_4_4", 1112, 1389, "⏱️", "Attack Speed", ["ghost_5_3"], 550],
+                ["ghost_5_1", 1485, 879, "⏱️", "Attack Speed", ["ghost_6_1", "ghost_6_2"], 2200],
+                ["ghost_5_2", 1433, 1250, "💥", "Unlock Combos", ["ghost_6_3", "ghost_6_4"], 3500],
+                ["ghost_5_3", 1138, 1481, "🔥", "Damage Percent", ["ghost_6_4"], 2200],
+                ["ghost_6_1", 1577, 856, "🔥", "Damage Percent", ["ghost_7_1", "ghost_6_2"], 9000],
+                ["ghost_6_2", 1574, 1157, "⏱️", "Attack Speed", ["ghost_7_2", "ghost_7_1", "ghost_6_3"], 9000],
+                ["ghost_6_3", 1423, 1418, "⏱️", "Attack Speed", ["ghost_7_3", "ghost_7_2", "ghost_6_4"], 9000],
+                ["ghost_6_4", 1164, 1572, "🔥", "Damage Percent", ["ghost_7_4"], 9000],
+                ["ghost_7_1", 1670, 833, "⏱️", "Attack Speed", ["ghost_8_1"], 36000],
+                ["ghost_7_2", 1665, 1182, "🔥", "Damage Percent", ["ghost_8_2"], 36000],
+                ["ghost_7_3", 1491, 1485, "🔥", "Damage Percent", ["ghost_8_2"], 36000],
+                ["ghost_7_4", 1190, 1663, "⏱️", "Attack Speed", ["ghost_8_3"], 36000],
+                ["ghost_8_1", 1762, 810, "🔥", "Damage Percent", ["ghost_9_1"], 145000],
+                ["ghost_8_2", 1680, 1392, "⏱️", "Attack Speed", ["ghost_9_2"], 145000],
+                ["ghost_8_3", 1216, 1755, "🔥", "Damage Percent", ["ghost_9_3"], 145000],
+                ["ghost_9_1", 1854, 787, "⏱️", "Attack Speed", ["ghost_10_1"], 580000],
+                ["ghost_9_2", 1762, 1440, "🔥", "Damage Percent", ["ghost_10_2"], 580000],
+                ["ghost_9_3", 1243, 1846, "⏱️", "Attack Speed", ["ghost_10_2"], 580000],
+                ["ghost_10_1", 1946, 764, "⏱️", "Attack Speed", [], 1950000],
+                ["ghost_10_2", 1269, 1937, "🔥", "Damage Percent", [], 1950000],
 
-            // === ANVIL TREE (Südwesten / Unten Links: Gold Chance, Gold Factor, Unregistered Hit) ===
-            ["anvil_1_1", 951, 1110, "🪙", "Bonus Gold Chance", ["anvil_2_1", "anvil_2_2"], 10],
-            ["anvil_1_2", 881, 987, "🪙", "Bonus Gold Factor", ["anvil_2_3"], 10],
-            ["anvil_2_1", 941, 1207, "🪙", "Bonus Gold Factor", ["anvil_3_1", "anvil_3_2"], 35],
-            ["anvil_2_2", 814, 1108, "💥", "Unregistered Hit Chance", ["anvil_3_3", "anvil_3_4"], 35],
-            ["anvil_2_3", 791, 948, "🪙", "Bonus Gold Chance", ["anvil_3_4"], 35],
-            ["anvil_3_1", 915, 1298, "🪙", "Bonus Gold Chance", ["anvil_4_1"], 140],
-            ["anvil_3_2", 780, 1218, "🪙", "Bonus Gold Factor", ["anvil_4_2"], 140],
-            ["anvil_3_3", 701, 1082, "🪙", "Bonus Gold Factor", ["anvil_4_3"], 140],
-            ["anvil_3_4", 699, 925, "💥", "Unregistered Hit Chance", ["anvil_4_4"], 140],
-            ["anvil_4_1", 888, 1389, "💥", "Unregistered Hit Chance", ["anvil_5_1", "anvil_5_2"], 550],
-            ["anvil_4_2", 712, 1285, "🪙", "Bonus Gold Chance", ["anvil_5_2", "anvil_5_3"], 550],
-            ["anvil_4_3", 609, 1107, "🪙", "Bonus Gold Factor", ["anvil_5_4", "anvil_5_5"], 550],
-            ["anvil_4_4", 607, 902, "🪙", "Bonus Gold Chance", ["anvil_5_5"], 550],
-            ["anvil_5_1", 862, 1481, "🪙", "Bonus Gold Factor", ["anvil_6_1"], 2200],
-            ["anvil_5_2", 692, 1394, "💥", "Unregistered Hit Chance", ["anvil_6_2"], 2200],
-            ["anvil_5_3", 567, 1250, "🪙", "Bonus Gold Factor", ["anvil_6_3"], 2200],
-            ["anvil_5_4", 505, 1070, "💥", "Unregistered Hit Chance", ["anvil_6_4"], 2200],
-            ["anvil_5_5", 515, 879, "🪙", "Bonus Gold Factor", ["anvil_6_5"], 2200],
-            ["anvil_6_1", 836, 1572, "🪙", "Bonus Gold Chance", ["anvil_7_1", "anvil_6_2"], 9000],
-            ["anvil_6_2", 634, 1469, "🪙", "Bonus Gold Factor", ["anvil_7_2", "anvil_7_1", "anvil_6_3"], 9000],
-            ["anvil_6_3", 485, 1298, "💥", "Unregistered Hit Chance", ["anvil_7_3", "anvil_7_2", "anvil_6_4"], 9000],
-            ["anvil_6_4", 411, 1083, "🪙", "Bonus Gold Factor", ["anvil_7_3", "anvil_7_2", "anvil_6_5"], 9000],
-            ["anvil_6_5", 423, 856, "🪙", "Bonus Gold Chance", ["anvil_7_4"], 9000],
-            ["anvil_7_1", 810, 1663, "🪙", "Bonus Gold Factor", ["anvil_8_1"], 36000],
-            ["anvil_7_2", 509, 1485, "💥", "Unregistered Hit Chance", ["anvil_8_2"], 36000],
-            ["anvil_7_3", 335, 1182, "🪙", "Bonus Gold Factor", ["anvil_8_3"], 36000],
-            ["anvil_7_4", 330, 833, "💥", "Unregistered Hit Chance", ["anvil_8_4"], 36000],
-            ["anvil_8_1", 784, 1755, "🪙", "Bonus Gold Chance", ["anvil_9_1"], 145000],
-            ["anvil_8_2", 442, 1552, "🪙", "Bonus Gold Factor", ["anvil_9_1"], 145000],
-            ["anvil_8_3", 243, 1208, "🪙", "Bonus Gold Chance", ["anvil_9_2"], 145000],
-            ["anvil_8_4", 238, 810, "🪙", "Bonus Gold Factor", ["anvil_9_2"], 145000],
-            ["anvil_9_1", 757, 1846, "💥", "Unregistered Hit Chance", ["anvil_10_1"], 580000],
-            ["anvil_9_2", 146, 787, "🪙", "Bonus Gold Factor", ["anvil_10_2"], 580000],
-            ["anvil_10_1", 731, 1937, "🪙", "Bonus Gold Chance", [], 1950000],
-            ["anvil_10_2", 54, 764, "💥", "Unregistered Hit Chance", [], 1950000]
+                // === ANVIL TREE (Südwesten / Unten Links: Gold Chance, Gold Factor, Unregistered Hit) ===
+                ["anvil_1_1", 951, 1110, "🪙", "Bonus Gold Chance", ["anvil_2_1", "anvil_2_2"], 10],
+                ["anvil_1_2", 881, 987, "🪙", "Bonus Gold Factor", ["anvil_2_3"], 10],
+                ["anvil_2_1", 941, 1207, "🪙", "Bonus Gold Factor", ["anvil_3_1", "anvil_3_2"], 35],
+                ["anvil_2_2", 814, 1108, "💥", "Unregistered Hit Chance", ["anvil_3_3", "anvil_3_4"], 35],
+                ["anvil_2_3", 791, 948, "🪙", "Bonus Gold Chance", ["anvil_3_4"], 35],
+                ["anvil_3_1", 915, 1298, "🪙", "Bonus Gold Chance", ["anvil_4_1"], 140],
+                ["anvil_3_2", 780, 1218, "🪙", "Bonus Gold Factor", ["anvil_4_2"], 140],
+                ["anvil_3_3", 701, 1082, "🪙", "Bonus Gold Factor", ["anvil_4_3"], 140],
+                ["anvil_3_4", 699, 925, "💥", "Unregistered Hit Chance", ["anvil_4_4"], 140],
+                ["anvil_4_1", 888, 1389, "💥", "Unregistered Hit Chance", ["anvil_5_1", "anvil_5_2"], 550],
+                ["anvil_4_2", 712, 1285, "🪙", "Bonus Gold Chance", ["anvil_5_2", "anvil_5_3"], 550],
+                ["anvil_4_3", 609, 1107, "🪙", "Bonus Gold Factor", ["anvil_5_4", "anvil_5_5"], 550],
+                ["anvil_4_4", 607, 902, "🪙", "Bonus Gold Chance", ["anvil_5_5"], 550],
+                ["anvil_5_1", 862, 1481, "🪙", "Bonus Gold Factor", ["anvil_6_1"], 2200],
+                ["anvil_5_2", 692, 1394, "💥", "Unregistered Hit Chance", ["anvil_6_2"], 2200],
+                ["anvil_5_3", 567, 1250, "🪙", "Bonus Gold Factor", ["anvil_6_3"], 2200],
+                ["anvil_5_4", 505, 1070, "💥", "Unregistered Hit Chance", ["anvil_6_4"], 2200],
+                ["anvil_5_5", 515, 879, "🪙", "Bonus Gold Factor", ["anvil_6_5"], 2200],
+                ["anvil_6_1", 836, 1572, "🪙", "Bonus Gold Chance", ["anvil_7_1", "anvil_6_2"], 9000],
+                ["anvil_6_2", 634, 1469, "🪙", "Bonus Gold Factor", ["anvil_7_2", "anvil_7_1", "anvil_6_3"], 9000],
+                ["anvil_6_3", 485, 1298, "💥", "Unregistered Hit Chance", ["anvil_7_3", "anvil_7_2", "anvil_6_4"], 9000],
+                ["anvil_6_4", 411, 1083, "🪙", "Bonus Gold Factor", ["anvil_7_3", "anvil_7_2", "anvil_6_5"], 9000],
+                ["anvil_6_5", 423, 856, "🪙", "Bonus Gold Chance", ["anvil_7_4"], 9000],
+                ["anvil_7_1", 810, 1663, "🪙", "Bonus Gold Factor", ["anvil_8_1"], 36000],
+                ["anvil_7_2", 509, 1485, "💥", "Unregistered Hit Chance", ["anvil_8_2"], 36000],
+                ["anvil_7_3", 335, 1182, "🪙", "Bonus Gold Factor", ["anvil_8_3"], 36000],
+                ["anvil_7_4", 330, 833, "💥", "Unregistered Hit Chance", ["anvil_8_4"], 36000],
+                ["anvil_8_1", 784, 1755, "🪙", "Bonus Gold Chance", ["anvil_9_1"], 145000],
+                ["anvil_8_2", 442, 1552, "🪙", "Bonus Gold Factor", ["anvil_9_1"], 145000],
+                ["anvil_8_3", 243, 1208, "🪙", "Bonus Gold Chance", ["anvil_9_2"], 145000],
+                ["anvil_8_4", 238, 810, "🪙", "Bonus Gold Factor", ["anvil_9_2"], 145000],
+                ["anvil_9_1", 757, 1846, "💥", "Unregistered Hit Chance", ["anvil_10_1"], 580000],
+                ["anvil_9_2", 146, 787, "🪙", "Bonus Gold Factor", ["anvil_10_2"], 580000],
+                ["anvil_10_1", 731, 1937, "🪙", "Bonus Gold Chance", [], 1950000],
+                ["anvil_10_2", 54, 764, "💥", "Unregistered Hit Chance", [], 1950000]
             ];
-
-            /*const skills = [
-                ["unlock_ghost",  175, 300, "👻", "Unlock Ghost", ["anvil_1", "hammer_1", "ghost_1"], 25],
-                ["anvil_1",   95, 230, "🪙", "Bonus Gold Chance", ["anvil_2"], 10],
-                ["hammer_1", 175, 210, "💥", "Damage", ["hammer_2", "ghost_2"], 10],
-                ["ghost_1",  255, 230, "⏱️", "Attack Speed", [], 10],
-                ["anvil_2",    95,  150, "🪙", "Bonus Gold Factor", ["anvil_3"], 15],
-                ["hammer_2",  175,  130, "💥", "Crit Chance", ["hammer_3"], 15],
-                ["ghost_2",   255,  150, "🔥", "Damage Percent", ["ghost_3"], 15],
-                ["anvil_3",    95,  80, "💥", "Unregistered Hit Chance", [], 20],
-                ["hammer_3",  175,  60, "💥", "Crit Factor", [], 20],
-                ["ghost_3",  255,  80, "💥", "Unlock Combos", [], 20],
-            ];*/
 
             const NS = "http://www.w3.org/2000/svg", R = 22;
             const svg = document.getElementById("tree");
@@ -4472,21 +4466,54 @@
                         g.classList.remove("highlighted");
                         g.classList.add("bought");
 
-                        switch (g.id) {
-                            case 'unlock_ghost': idle_ghost(); break;
-                            case 'anvil_1':  /* BONUS GOLD CHANCE */ break;
-                            case 'anvil_2':  /* BONUS GOLD FAKTOR */ break;
-                            case 'anvil_3':  /* UNREGISTERED HIT CHANCE */ break;
-                            case 'hammer_1': /* DAMAGE */ STAT_ATK += 10; break;
-                            case 'hammer_2': /* CRIT CHANCE */ break;
-                            case 'hammer_3': /* CRIT FACTOR */ break;
-                            case 'ghost_1':  /* ATTACK SPEED */
-                                IDLE_INTERVAL = 250;
-                                document.documentElement.style.setProperty('--hammer_speed', '.25s');
-                                document.documentElement.style.setProperty('--anvil_speed', '.25s');
-                                break;
-                            case 'ghost_2':  /* DAMAGE PERCENT */ break;
-                            case 'ghost_3':  break;
+                        if (g.id === 'unlock_ghost') {
+                            idle_ghost();
+                        } else if (g.id === 'ghost_5_2') {
+                            UNLOCKED_COMBOS = true; // TODO
+                        } else {
+                            switch (match[4]) {
+                                case 'Damage':
+                                    // 25 Nodes * 80 = +2000 ATK (Start: 1 -> Cap: 2001, bzw. mit Math.min auf 2000 gedeckelt)
+                                    STAT_DAMAGE = Math.min(2000, STAT_DAMAGE + 80);
+                                    break;
+
+                                case 'Crit Chance':
+                                    // 11 Nodes * 3% = 33% Cap (als Dezimalzahl 0.33 oder Prozentzahl 33 nutzen)
+                                    STAT_CRIT_CHANCE = Math.min(33, STAT_CRIT_CHANCE + 3);
+                                    break;
+
+                                case 'Crit Factor':
+                                    // 10 Nodes * 0.35 = +3.5x (Start: 1.5x -> Cap: 5.0x)
+                                    STAT_CRIT_FACTOR = Math.min(5.0, +(STAT_CRIT_FACTOR + 0.35).toFixed(2));
+                                    break;
+
+                                case 'Attack Speed':
+                                    // 15 Nodes * -65ms (Start: 1000ms -> Cap: 25ms)
+                                    IDLE_INTERVAL = Math.max(25, IDLE_INTERVAL - 65);
+                                    document.documentElement.style.setProperty('--hammer_speed', (IDLE_INTERVAL / 1000) + 's');
+                                    document.documentElement.style.setProperty('--anvil_speed', (IDLE_INTERVAL / 1000) + 's');
+                                    break;
+
+                                case 'Damage Percent':
+                                    // 15 Nodes * 1% = 15% Cap
+                                    STAT_DMG_PERCENT = Math.min(15, STAT_DMG_PERCENT + 1);
+                                    break;
+
+                                case 'Bonus Gold Chance':
+                                    // 10 Nodes * 2.5% = 25% Cap
+                                    STAT_GOLD_CHANCE = Math.min(25, +(STAT_GOLD_CHANCE + 2.5).toFixed(1));
+                                    break;
+
+                                case 'Bonus Gold Factor':
+                                    // 15 Nodes * 0.1 = +1.5x (Start: 1.0x -> Cap: 2.5x)
+                                    STAT_GOLD_FACTOR = Math.min(2.5, +(STAT_GOLD_FACTOR + 0.1).toFixed(1));
+                                    break;
+
+                                case 'Unregistered Hit Chance':
+                                    // 10 Nodes * 2.5% = 25% Cap
+                                    STAT_UNREG_CHANCE = Math.min(25, +(STAT_UNREG_CHANCE + 2.5).toFixed(1));
+                                    break;
+                            }
                         }
                     }
                 });
@@ -4558,11 +4585,11 @@
 
                     let damage_dealt = 0,
                         was_crit = false;
-                    if (Math.random() <= STAT_CRIT_CHANCE) {
-                        damage_dealt = STAT_ATK * STAT_CRIT_FACTOR;
+                    if (Math.random() * 100 + 1 <= STAT_CRIT_CHANCE) {
+                        damage_dealt = STAT_DAMAGE * STAT_CRIT_FACTOR;
                         was_crit = true;
                     }
-                    else damage_dealt = STAT_ATK;
+                    else damage_dealt = STAT_DAMAGE;
                     damage_dealt *= Math.random() + 0.5;
 
                     let damage_log = document.createElement("div");
@@ -4572,7 +4599,7 @@
                     // DPS COLOR
                     if (was_crit) {
                         // FLASH SCREEN MONOCHROME+RED ON "SUPER-CRIT"
-                        if (damage_dealt > STAT_ATK * STAT_CRIT_FACTOR * 1.48) {
+                        if (damage_dealt > STAT_DAMAGE * STAT_CRIT_FACTOR * 1.48) {
                             clearTimeout(critTimeout);
 
                             damage_log.classList.add("super_crit");
@@ -4603,7 +4630,7 @@
                         }
                         else damage_log.classList.add("crit");
                     }
-                    else if (damage_dealt > STAT_ATK) damage_log.classList.add("medium");
+                    else if (damage_dealt > STAT_DAMAGE) damage_log.classList.add("medium");
                     else damage_log.classList.add("small");
 
                     damage_log.innerHTML = Math.round(damage_dealt);
