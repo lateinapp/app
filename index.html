@@ -1683,15 +1683,19 @@
                 left: calc(50% - 50px);
                 top: 150px;
                 animation: var(--anvil_speed) anvil infinite;
-                user-select: none;
             }
-            @keyframes anvil {
-                50% {
-                    transform: rotate(2deg) scale(0.95);
-                }
-                100% {
-                    transform: rotate(0deg) scale(1);
-                }
+            #anvil_wrapper,
+            #anvil,
+            #anvil * {
+                -webkit-tap-highlight-color: transparent;
+                -webkit-user-select: none;
+                user-select: none;
+                -webkit-touch-callout: none;
+                touch-action: manipulation;
+            }
+            #anvil img {
+                pointer-events: none;
+                -webkit-user-drag: none;
             }
             #anvil > .damage_log {
                 position: absolute;
@@ -1740,6 +1744,20 @@
             @keyframes dps_variant_4 {100% { transform: translateY(-65px) translateX(5px);}}
             @keyframes dps_variant_5 {100% { transform: translateY(-45px) translateX(15px);}}
             @keyframes dps_variant_6 {100% { transform: translateY(-55px) translateX(30px);}}
+            .spark {
+                position: absolute;
+                width: 3px; height: 3px;
+                border-radius: 50%;
+                background: #ffd25a;
+                box-shadow: 0 0 6px 1px #ff9a1f;
+                pointer-events: none;
+                animation: spark .4s ease-out forwards;
+            }
+            @keyframes spark {
+                0%   { transform: translate(0, 0); opacity: 1; }
+                50%  { transform: translate(var(--dx), var(--dy)); opacity: 1; }
+                100% { transform: translate(calc(var(--dx) * 1.4), calc(var(--dy) + 40px)); opacity: 0; }
+            }
             #ghost {
                 position: absolute;
                 right: 20px;
@@ -1770,17 +1788,19 @@
                 transition: transform .2s;
                 transform: rotate(40deg);
             }
-            @keyframes hammer {
-                50% {
-                    transform: rotate(0deg);
-                }
-                100% {
-                    transform: rotate(40deg);
-                }
-            }
             #hammer.shrink {
                 animation: none;
                 transform: rotate(0deg);
+            }
+            @keyframes hammer {
+                0%   { transform: rotate(0deg);  animation-timing-function: ease-out; }
+                60%  { transform: rotate(40deg); animation-timing-function: ease-in; }
+                100% { transform: rotate(0deg); }
+            }
+            @keyframes anvil {
+                0%   { transform: rotate(2deg) scale(0.95); }
+                50%  { transform: rotate(0deg) scale(1); }
+                100% { transform: rotate(0deg) scale(1); }
             }
             #level_bar,
             #crafting_bar {
@@ -1819,16 +1839,36 @@
                 border-radius: 999px;
                 background: linear-gradient(#ffffff55, #ffffff00);
             }
-            #gold_value {
+            #gold_value,
+            #gps_value {
                 position: absolute;
-                top: 10px;
                 left: 10px;
                 font-weight: bold;
-                font-family: monospace;
-                font-size: 20px;
                 text-shadow: 2px 2px 0 #000;
             }
-            .bar_value {
+            #gold_value {
+                top: 10px;
+                font: 20px monospace;
+            }
+            #gps_value {
+                top: 36px;
+                font: 12px monospace;
+            }
+            .income_popup {
+                position: absolute;
+                right: calc(50% - 155px);
+                bottom: 80px;
+                color: #afff00;
+                font: bold 12px monospace;
+                text-shadow: 1px 1px 0 #000;
+                pointer-events: none;
+                animation: income_popup 1s ease-out forwards;
+            }
+            @keyframes income_popup {
+                from { opacity: 1; transform: translateY(0); }
+                to   { opacity: 0; transform: translateY(-18px); }
+            }
+            #level_bar_value {
                 position: absolute;
                 inset: 0;
                 display: flex;
@@ -2200,7 +2240,6 @@
 
                     <div id="crafting_bar">
                         <div class="progress" id="crafting_bar_progress"></div>
-                        <div class="bar_value" id="crafting_bar_value">0%</div>
                     </div>
                 </div>
 
@@ -2209,6 +2248,7 @@
                 </div>
 
                 <div id="gold_value" class="gold"></div>
+                <div id="gps_value" class="gold hidden"></div>
 
                 <button class="button" id="upgrade_tree_toggle" onclick="toggle_upgrade_tree()">Upgrades</button>
             </div>
@@ -4193,8 +4233,8 @@
                 item_bar_progress = id("item_bar_progress"),
                 crafting_bar_progress = id("crafting_bar_progress"),
                 item_bar_value = id("item_bar_value"),
-                crafting_bar_value = id("crafting_bar_value"),
                 gold_value = id("gold_value"),
+                gps_value = id("gps_value"),
                 anvil = id("anvil"),
                 anvil_wrapper = id("anvil_wrapper"),
                 forge = id("forge"),
@@ -4221,7 +4261,7 @@
                 hit_counter = 0,
                 max_hits = 12,
                 LEVEL = 1,
-                BASE_HP = 16,
+                BASE_HP = 10,
                 LEVEL_HP_FACTOR = 1.02,
                 LEVEL_HP = BASE_HP * Math.pow(LEVEL_HP_FACTOR, LEVEL - 1),
                 LEVEL_DAMAGE = 0,
@@ -4232,13 +4272,16 @@
                 STAT_GOLD_CHANCE = 0,
                 STAT_GOLD_FACTOR = 1,
                 STAT_UNREG_CHANCE = 0,
-                GOLD = 0,
+                GOLD = 200,
                 IDLE_INTERVAL = 1000,
                 DPS_DELETE_CD = 300,
                 SUPER_CRIT_THRESHOLD = 1.48,
-                ghost_unlocked = false,
+                ghost_unlocked = false
+                ghost_expected = 0,
+                ghost_interval = 0,
                 critTimeout = null,
-                moved = false;
+                moved = false,
+                reset = false;
 
             function get_combined_bbox(e) {
                 if (!e || 0 === e.length) return null;
@@ -4688,17 +4731,33 @@
                 }
             }
 
+            function resync_anims() {                   // Animationen auf Phase 0 zurücksetzen
+                [hammer, anvil, document.getElementById("ghost")].forEach((el) => {
+                    el.style.animation = "none";
+                    void el.offsetWidth;                // Reflow erzwingen
+                    el.style.animation = "";
+                });
+            }
+
             function idle_ghost() {
-                hit_anvil();
+                const now = performance.now();
                 if (!ghost_unlocked) {
-                    document.documentElement.style.setProperty('--hammer_speed', '1s');
-                    document.documentElement.style.setProperty('--anvil_speed', '1s');
-                    document.documentElement.style.setProperty('--ghost_speed', '1s');
+                    const s = (IDLE_INTERVAL / 1000) + "s";
+                    ["hammer", "anvil", "ghost"].forEach((n) =>
+                        document.documentElement.style.setProperty(`--${n}_speed`, s));
                     ghost_unlocked = true;
+                    ghost_expected = now;
+                } else if (ghost_interval !== IDLE_INTERVAL) {
+                    resync_anims();                     // Intervall geändert, Phase neu starten
+                    ghost_expected = now;
                 }
-                setTimeout(() => {
-                    idle_ghost();
-                }, IDLE_INTERVAL);
+                ghost_interval = IDLE_INTERVAL;
+
+                hit_anvil();                            // genau jetzt ist der Hammer bei 0°
+
+                ghost_expected += IDLE_INTERVAL;
+                if (ghost_expected < now - 100) ghost_expected = now;   // Tab war im Hintergrund
+                setTimeout(idle_ghost, Math.max(0, ghost_expected - performance.now()));
             }
 
             function toggle_game() {
@@ -4719,67 +4778,107 @@
                 }, 90);
             });
 
+            const gold_log = [], gps_start = performance.now(), GPS_WINDOW = 10000;
+            setInterval(() => {
+                const now = performance.now();
+                while (gold_log.length && now - gold_log[0][0] > GPS_WINDOW) gold_log.shift();
+                const secs = Math.min(GPS_WINDOW, now - gps_start) / 1000;
+                const sum = gold_log.reduce((a, e) => a + e[1], 0);
+                let current_log_value = format_number(secs > 0 ? sum / secs : 0);
+                if (current_log_value == 0) {
+                    if(!gps_value.classList.contains("hidden")) gps_value.classList.add("hidden");
+                }
+                else {
+                    if(gps_value.classList.contains("hidden")) gps_value.classList.remove("hidden");
+                    gps_value.innerHTML = `${current_log_value}/s`;
+                }
+            }, 1000);
+
+            function spawn_sparks(n = 3) {
+                for (let i = 0; i < n; i++) {
+                    const s = document.createElement("div");
+                    s.className = "spark";
+                    s.style.left = "40%";
+                    s.style.top = "0";
+                    s.style.setProperty("--dx", `${(Math.random() - 0.5) * 70}px`);
+                    s.style.setProperty("--dy", `${-15 - Math.random() * 40}px`);
+                    anvil.appendChild(s);
+                    setTimeout(() => s.remove(), 400);
+                }
+            }
+
+            function income_popup(amount) {
+                const el = document.createElement("div");
+                el.className = "income_popup";
+                el.textContent = `+ $ ${format_number(amount)}`;
+                level_bar.parentElement.appendChild(el);
+                setTimeout(() => el.remove(), 1000);
+            }
+
             function hit_anvil() {
-                // Advance bar and calculate damage/level
+                let damage_dealt = 0,
+                    was_crit = false;
+                if (Math.random() * 100 <= STAT_CRIT_CHANCE) {
+                    damage_dealt = STAT_DAMAGE * STAT_CRIT_FACTOR;
+                    was_crit = true;
+                }
+                else damage_dealt = STAT_DAMAGE;
+                damage_dealt *= Math.random() + 0.5;
+                damage_dealt *= 1 + STAT_DMG_PERCENT / 100;
+
+                let damage_log = document.createElement("div");
+                damage_log.classList.add("damage_log");
+                damage_log.classList.add(`dps_variant_${Math.floor(Math.random() * 6) + 1}`);
+
+                // DPS COLOR
+                if (was_crit) {
+                    // FLASH SCREEN MONOCHROME+RED ON "SUPER-CRIT"
+                    if (damage_dealt > STAT_DAMAGE * STAT_CRIT_FACTOR * SUPER_CRIT_THRESHOLD) {
+                        clearTimeout(critTimeout);
+
+                        damage_log.classList.add("super_crit");
+                        // DONT SHOW MONOCHROME-RED FILTER IF UPGRADE TREE IS OPEN
+                        if (upgrade_tree.classList.contains("hidden")) game_wrapper.classList.add('super_crit');
+
+                        let old_idle_interval = IDLE_INTERVAL,
+                            old_hammer_speed = document.documentElement.style.getPropertyValue('--hammer_speed'),
+                            old_anvil_speed = document.documentElement.style.getPropertyValue('--hammer_speed'),
+                            old_ghost_speed = document.documentElement.style.getPropertyValue('--ghost_speed');
+
+                        document.documentElement.style.setProperty('--hammer_speed', '5s');
+                        document.documentElement.style.setProperty('--anvil_speed', '5s');
+                        document.documentElement.style.setProperty('--ghost_speed', '5s');
+
+                        IDLE_INTERVAL = 1000;
+                        DPS_DELETE_CD = 1000;
+
+                        damage_dealt *= Math.floor(Math.random() * 5) + 1;
+                        critTimeout = setTimeout(() => {
+                            game_wrapper.classList.remove('super_crit');
+                            IDLE_INTERVAL = old_idle_interval;
+                            DPS_DELETE_CD = 300;
+
+                            document.documentElement.style.setProperty('--hammer_speed', old_hammer_speed);
+                            document.documentElement.style.setProperty('--anvil_speed', old_anvil_speed);
+                            document.documentElement.style.setProperty('--ghost_speed', old_ghost_speed);
+                        }, 1000);
+                    }
+                    else damage_log.classList.add("crit");
+                }
+                else if (damage_dealt > STAT_DAMAGE) damage_log.classList.add("medium");
+                else damage_log.classList.add("small");
+
+                damage_log.innerHTML = Math.round(damage_dealt);
+                if (was_crit) spawn_sparks(8);
+                else spawn_sparks();
+                anvil.appendChild(damage_log);
+                setTimeout(() => {
+                    damage_log.remove();
+                }, DPS_DELETE_CD);
+
                 if (hit_counter < max_hits) {
-                    hit_counter += 1;
-
-                    let damage_dealt = 0,
-                        was_crit = false;
-                    if (Math.random() * 100 + 1 <= STAT_CRIT_CHANCE) {
-                        damage_dealt = STAT_DAMAGE * STAT_CRIT_FACTOR;
-                        was_crit = true;
-                    }
-                    else damage_dealt = STAT_DAMAGE;
-                    damage_dealt *= Math.random() + 0.5;
-
-                    let damage_log = document.createElement("div");
-                    damage_log.classList.add("damage_log");
-                    damage_log.classList.add(`dps_variant_${Math.floor(Math.random() * 6) + 1}`);
-
-                    // DPS COLOR
-                    if (was_crit) {
-                        // FLASH SCREEN MONOCHROME+RED ON "SUPER-CRIT"
-                        if (damage_dealt > STAT_DAMAGE * STAT_CRIT_FACTOR * SUPER_CRIT_THRESHOLD) {
-                            clearTimeout(critTimeout);
-
-                            damage_log.classList.add("super_crit");
-                            game_wrapper.classList.add('super_crit');
-
-                            let old_idle_interval = IDLE_INTERVAL,
-                                old_hammer_speed = document.documentElement.style.getPropertyValue('--hammer_speed'),
-                                old_anvil_speed = document.documentElement.style.getPropertyValue('--hammer_speed'),
-                                old_ghost_speed = document.documentElement.style.getPropertyValue('--ghost_speed');
-
-                            document.documentElement.style.setProperty('--hammer_speed', '5s');
-                            document.documentElement.style.setProperty('--anvil_speed', '5s');
-                            document.documentElement.style.setProperty('--ghost_speed', '5s');
-
-                            IDLE_INTERVAL = 1000;
-                            DPS_DELETE_CD = 1000;
-
-                            damage_dealt *= Math.floor(Math.random() * 5) + 1;
-                            critTimeout = setTimeout(() => {
-                                game_wrapper.classList.remove('super_crit');
-                                IDLE_INTERVAL = old_idle_interval;
-                                DPS_DELETE_CD = 300;
-                                
-                                document.documentElement.style.setProperty('--hammer_speed', old_hammer_speed);
-                                document.documentElement.style.setProperty('--anvil_speed', old_anvil_speed);
-                                document.documentElement.style.setProperty('--ghost_speed', old_ghost_speed);
-                            }, 1000);
-                        }
-                        else damage_log.classList.add("crit");
-                    }
-                    else if (damage_dealt > STAT_DAMAGE) damage_log.classList.add("medium");
-                    else damage_log.classList.add("small");
-
-                    damage_log.innerHTML = Math.round(damage_dealt);
-                    anvil.appendChild(damage_log);
-                    setTimeout(() => {
-                        damage_log.remove();
-                    }, DPS_DELETE_CD);
-
+                    // UNREGISTERED HITS
+                    if (Math.random() * 100 > STAT_UNREG_CHANCE) hit_counter += 1;
                     // APPLY DAMAGE AFTER DPS COLORING -> BOOST DAMAGE ON SUPER-CRIT
                     LEVEL_DAMAGE += damage_dealt;
 
@@ -4791,9 +4890,15 @@
                 }
                 // Reset bar and sell item
                 else {
+                    reset = true;
                     hit_counter = 0;
 
-                    GOLD += Math.floor(Math.pow(1.105, LEVEL - 1));
+                    const gain = Math.floor(Math.pow(1.105, LEVEL - 1));
+                    if (Math.random() * 100 <= STAT_GOLD_CHANCE) GOLD += gain * (1 + STAT_GOLD_FACTOR / 100);
+                    else GOLD += gain;
+                    income_popup(gain);
+                    gold_log.push([performance.now(), gain]);
+
                     LEVEL = 1;
 
                     LEVEL_DAMAGE = 0;
@@ -4807,8 +4912,9 @@
                 level_bar_value.innerHTML = `${Math.trunc(level_percent)}% (LEVEL ${LEVEL})`;
 
                 let crafting_percent = hit_counter / max_hits * 100;
-                crafting_bar_progress.style.width = `${Math.trunc(crafting_percent)}%`;
-                crafting_bar_value.innerHTML = `${Math.trunc(crafting_percent)}%`;
+                crafting_bar_progress.style.transition = reset ? "none" : `width ${ghost_unlocked ? IDLE_INTERVAL : 120}ms linear`;
+                crafting_bar_progress.style.width = `${crafting_percent}%`;
+                reset = false;
             }
 
             function quiz(e = false) {
