@@ -1944,9 +1944,9 @@
 
             <div class="tab" id="settings">
                 <input type="file" id="json_upload" accept=".json,application/json"/>
-                <button class="button import_export" onclick='confirm("Alle gespeicherten Vokabeln löschen?")&&localStorage.removeItem("cache"),location.reload(!0)'>Gespeicherte Vokabeln löschen</button>
-                <button class="button import_export" onclick='confirm("Importierte Lektion löschen?")&&localStorage.removeItem("custom"),location.reload(!0)'>Importierte Lektion löschen</button>
-                <button class="button import_export" onclick="confirm('Aktuellen Stand runterladen?')&&_export()">Export 📤</button>
+                <button class="button import_export" onclick='confirm("Alle gespeicherten Vokabeln löschen?")?(localStorage.removeItem("cache"),location.reload(!0)):""'>Gespeicherte Vokabeln löschen</button>
+                <button class="button import_export" onclick='confirm("Importierte Lektion löschen?")?(localStorage.removeItem("custom"),location.reload(!0)):""'>Importierte Lektion löschen</button>
+                <button class="button import_export" onclick='confirm("Aktuellen Stand runterladen?")?_export():""'>Export 📤</button>
                 <button class="button import_export" onclick="new_couple()">Neue Zeile</button>
                 <div id="couples"></div>
             </div>
